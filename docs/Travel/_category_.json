@@ -1,0 +1,8 @@
+{
+  "label": "Travel",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Cuckoo Financial travel concepts."
+  }
+}
