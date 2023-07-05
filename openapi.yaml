@@ -1,0 +1,369 @@
+openapi: 3.0.1
+info:
+  title: Cuckoo Financial Rewards API
+  version: '1.0'
+servers:
+  - url: https://rewards.cuckoofi.com
+tags:
+  - name: Gift Card Brands
+  - name: Gift Card Orders
+  - name: API Keys
+paths:
+  /api/v1/gift-cards/brands/{brandKey}/items:
+    get:
+      tags:
+        - Gift Card Brands
+      operationId: getBrandDetailWithBrandItemInfo
+      summary: List all items under a gift card brand
+      parameters:
+        - name: brandKey
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/BrandDetailDto'
+  /api/v1/gift-cards/brands/items:
+    get:
+      tags:
+        - Gift Card Brands
+      operationId: getAllBrandItemInfoList
+      summary: List all gift card brands
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrandItemInfoDto'
+  /api/v1/gift-cards/programs/{programId}/orders:
+    get:
+      tags:
+        - Gift Card Orders
+      operationId: getAllOrdersForUser
+      summary: Get all gift card orders for a program
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderSearchDto'
+    post:
+      tags:
+        - Gift Card Orders
+      operationId: placeOrderForGiftCard
+      summary: Place a gift card order under a program
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v1/api-keys:
+    get:
+      tags:
+        - API Keys
+      summary: List all api keys
+      operationId: list
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiKeyDto'
+    post:
+      tags:
+        - API Keys
+      summary: Create api key
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreateDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiKeyDtoWithGeneratedKey'
+  /api/v1/api-keys/{keyId}/roll:
+    post:
+      tags:
+        - API Keys
+      summary: Revoke and issue new api key with same key id
+      operationId: rollApiKey
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiKeyDtoWithGeneratedKey'
+  /api/v1/api-keys/{keyId}:
+    put:
+      tags:
+        - API Keys
+      summary: Update api key
+      operationId: update
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyUpdateDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiKeyDto'
+    delete:
+      tags:
+        - API Keys
+      summary: Delete api key
+      operationId: delete
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    OrderCreateDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDto'
+    OrderItemDto:
+      type: object
+      properties:
+        utid:
+          type: string
+        amount:
+          type: number
+        quantity:
+          type: integer
+          format: int32
+    ApiKeyCreateDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Gift Cards API Key
+        scopes:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            example: ckf_gift_cards
+        expiryDate:
+          type: string
+          format: date-time
+          example: 2024-12-04T19:05:55.739Z
+        enabled:
+          type: boolean
+          example: true
+    ApiKeyUpdateDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Gift Cards API Key
+        scopes:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            example: ckf_gift_cards
+        expiryDate:
+          type: string
+          format: date-time
+          example: 2024-12-04T19:05:55.739Z
+        enabled:
+          type: boolean
+          example: true
+    OrderSearchDto:
+      type: object
+      properties:
+        orderId:
+          type: string
+        transactionDate:
+          type: string
+        cardName:
+          type: string
+        utid:
+          type: string
+        amount:
+          type: number
+    BrandDetailDto:
+      type: object
+      properties:
+        brandKey:
+          type: string
+        brandName:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: string
+        terms:
+          type: string
+        disclaimer:
+          type: string
+        alwaysShowDisclaimer:
+          type: boolean
+        termsAndConditionsInstructions:
+          type: string
+        imageUrls:
+          type: object
+          additionalProperties:
+            type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BrandDetailItemInfoDto'
+    BrandDetailItemInfoDto:
+      type: object
+      properties:
+        utid:
+          type: string
+        rewardName:
+          type: string
+        faceValue:
+          type: number
+        redemptionInstructions:
+          type: string
+        currencyCode:
+          type: string
+    BrandItemInfoDto:
+      type: object
+      properties:
+        utid:
+          type: string
+        defaultFaceValue:
+          type: number
+        rewardName:
+          type: string
+        currencyCode:
+          type: string
+        brandKey:
+          type: string
+        brandName:
+          type: string
+        category:
+          type: string
+        imageUrls:
+          type: object
+          additionalProperties:
+            type: string
+    ApiKeyDtoWithGeneratedKey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        apiKey:
+          type: string
+          format: string
+          example: ckf_sandbox_1NoPR2v4TiWSNFLsLZ8F8O6iN3XWVjohIwD8UKJ6UScxifL2
+        name:
+          type: string
+          example: Gift Cards API Key
+        scopes:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            example: ckf_gift_cards
+        expiryDate:
+          type: string
+          format: date-time
+          example: 2024-12-04T19:05:55.739Z
+        enabled:
+          type: boolean
+          example: true
+    ApiKeyDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          example: Gift Cards API Key
+        scopes:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            example: ckf_gift_cards
+        expiryDate:
+          type: string
+          format: date-time
+          example: 2024-12-04T19:05:55.739Z
+        enabled:
+          type: boolean
+          example: true
